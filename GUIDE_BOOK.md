@@ -14,6 +14,8 @@ Dokumen ini adalah panduan lengkap untuk memahami arsitektur, cara kerja, cara i
 5. [Fitur-Fitur Unggulan](#5-fitur-fitur-unggulan)
 6. [Troubleshooting & Solusi Error](#6-troubleshooting--solusi-error)
 7. [Panduan Adopsi & Legalitas Lisensi MIT](#7-panduan-adopsi--legalitas-lisensi-mit)
+8. [Panduan Integrasi Google Gemini Pro & Unduh Model LLM Lokal](#8-panduan-integrasi-google-gemini-pro--unduh-model-llm-lokal)
+9. [Roadmap Pengembangan & Perancangan Monorepo](#9-roadmap-pengembangan--perancangan-monorepo)
 
 ---
 
@@ -195,3 +197,35 @@ Dengan mencantumkan format di atas pada file `LICENSE`, Anda:
 - ✅ Sepenuhnya legal dan aman secara hukum.
 - ✅ Menghargai pembuat asli proyek *upstream*.
 - ✅ Memiliki hak cipta atas seluruh kode dan penyesuaian baru yang Anda bangun.
+
+---
+
+## 8. Panduan Integrasi Google Gemini Pro & Unduh Model LLM Lokal
+
+Voicebox mendukung sistem **Hybrid LLM Intelligence**: menggunakan kecerdasan cloud (Google Gemini Pro) tanpa membebani laptop, atau model lokal offline (Qwen 2.5) saat tanpa internet.
+
+### A. Memasang API Key Google Gemini Pro di Tampilan (Tanpa `.env`)
+Anda **tidak perlu** mengedit file `.env` manual. Pasang API Key langsung di aplikasi:
+1. Buka Voicebox (Desktop atau Web).
+2. Buka menu **Settings** -> Tab **Captures** -> Bagian **Custom LLM Endpoint**.
+3. Masukkan konfigurasi resmi Google AI Studio:
+   - **Endpoint URL**: `https://generativelanguage.googleapis.com/v1beta/openai`
+   - **Model Name**: `gemini-1.5-pro` (atau `gemini-2.0-flash` untuk respon super cepat)
+   - **API Key**: Tempelkan API Key Google AI Studio Anda (`AIzaSy...`)
+4. Data akan otomatis tersimpan aman di database lokal Anda.
+
+### B. Mengunduh & Memperbarui Model LLM Lokal Offline
+Jika ingin mengunduh model offline, jalankan menu `[6]` di `start.bat` atau *double-click* **`download-models.bat`**:
+- **Qwen2.5-1.5B-Instruct** (*Rekomendasi Utama*): Seimbang antara kecepatan dan kecerdasan merapikan diktasi.
+- **Qwen2.5-0.5B-Instruct**: Sangat ringan untuk laptop tanpa VGA/GPU.
+- **Fitur Buka Browser**: Anda bisa memilih opsi buka tautan Hugging Face di browser untuk mengunduh file secara manual jika diinginkan.
+- **Penyimpanan Terpusat**: Seluruh model otomatis disimpan di folder `downloads\models\`.
+
+---
+
+## 9. Roadmap Pengembangan & Perancangan Monorepo
+
+Dokumentasi spesifikasi lengkap perancangan monorepo (Turborepo + Bun) dan pelacakan milestone masa depan dapat dipelajari pada:
+- [`PRD.md`](./PRD.md) - Product Requirements Document resmi Voicebox Next-Gen.
+- [`.agents/context/session-state.md`](./.agents/context/session-state.md) - Single Source of Truth status sesi dan arsitektur terkunci.
+

@@ -35,18 +35,20 @@ echo   [2] Jalankan Backend Saja       (FastAPI Server di port 17493)
 echo   [3] Jalankan Web UI Saja        (Browser Mode via Vite)
 echo   [4] Setup Dependensi Lengkap    (Install Bun, Python 3.12, PyTorch)
 echo   [5] Cek Status Service dan Port (Health Check :17493)
-echo   [6] Kelola / Hapus Downloads    (Pembersih Disk / Cache / Model)
+echo   [6] Download / Update Model AI  (Unduh Qwen2.5 / Llama3.2 / Kokoro)
+echo   [7] Kelola / Hapus Downloads    (Pembersih Disk / Cache / Model)
 echo   [0] Keluar
 echo.
 echo ======================================================================
-set /p "CHOICE=Pilih menu [0-6]: "
+set /p "CHOICE=Pilih menu [0-7]: "
 
 if "%CHOICE%"=="1" goto START_DESKTOP
 if "%CHOICE%"=="2" goto START_SERVER
 if "%CHOICE%"=="3" goto START_WEB
 if "%CHOICE%"=="4" goto SETUP_ENV
 if "%CHOICE%"=="5" goto CHECK_STATUS
-if "%CHOICE%"=="6" goto MANAGE_DOWNLOADS
+if "%CHOICE%"=="6" goto DOWNLOAD_MODELS
+if "%CHOICE%"=="7" goto MANAGE_DOWNLOADS
 if "%CHOICE%"=="0" goto EXIT_APP
 
 echo Pilihan tidak valid, silakan coba lagi.
@@ -196,6 +198,10 @@ if exist "%ROOT_DIR%tauri\src-tauri\binaries\voicebox-server-*.exe" (
 
 echo.
 pause
+goto MENU
+
+:DOWNLOAD_MODELS
+call "%ROOT_DIR%download-models.bat"
 goto MENU
 
 :MANAGE_DOWNLOADS

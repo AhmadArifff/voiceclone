@@ -13,16 +13,26 @@ Selamat datang di direktori konfigurasi agen lokal Voicebox. Direktori ini menyi
 | [`tauri-desktop-audio`](./skills/tauri-desktop-audio/SKILL.md) | Desktop App & Native Audio (Rust) | Saat mengerjakan lapisan desktop Tauri 2, global hotkey chord matcher (`keytap`), active window focus capture, clipboard synthetic keystrokes paste, dan manajemen sidecar Python. |
 | [`voicebox-backend`](./skills/voicebox-backend/SKILL.md) | Backend FastAPI & AI Inference | Saat mengedit backend Python 3.12+, REST routes, serial GPU task queue, SQLAlchemy SQLite models, deteksi akselerasi GPU (CUDA/MLX/ROCm), dan kepatuhan `STYLE_GUIDE.md`. |
 | [`voicebox-frontend`](./skills/voicebox-frontend/SKILL.md) | Frontend UI React & Wavesurfer | Saat mengembangkan komponen antarmuka React 18, WaveSurfer.js waveform visualizer, TanStack Query cache invalidation, Zustand stores, dan Tailwind CSS. |
+| [`hybrid-llm-engine`](./skills/hybrid-llm-engine/SKILL.md) | Hybrid LLM (Gemini Pro + Local LLM) | Saat mengonfigurasi atau menguji integrasi Google Gemini Pro via UI (Google AI Studio), manajemen model lokal (Qwen2.5, Llama 3.2), dan pipeline diktasi/refinement teks. |
 | [`draft-release-notes`](./skills/draft-release-notes/SKILL.md) | Rilis & Dokumentasi | Saat menyusun draft catatan rilis pada bagian `[Unreleased]` di `CHANGELOG.md` berdasarkan commit diff sejak tag terakhir. |
 | [`release-bump`](./skills/release-bump/SKILL.md) | Eksekusi Rilis Versi | Saat memfinalisasi rilis produksi: stamping versi, menjalankan `bumpversion`, dan membuat commit serta git tag rilis. |
 | [`triage-prs`](./skills/triage-prs/SKILL.md) | Triase Pull Request | Saat melakukan tinjauan dan penggabungan (merge loop) batch pull request sebelum rilis baru. |
 
 ---
 
+## 📌 Status Sesi & Memori Arsitektur
+
+Agar AI agent dan tim pengembang tidak mengalami *context drift* (kehilangan jejak keputusan), pelajari:
+- **Pelacak Status Sesi**: [`context/session-state.md`](./context/session-state.md) (Keputusan terkunci, bug fix log, dan status sub-task).
+- **Rencana Pengembangan Resmi**: [`../PRD.md`](../PRD.md) (Roadmap Fase 1-4, Arsitektur Monorepo Turborepo + Bun, dan Acceptance Criteria).
+
+---
+
 ## 🏗️ Standar Arsitektur Singkat
 
-1. **Frontend**: Vite + React 18 + Tailwind CSS + Radix UI + Motion di folder `app/`.
+1. **Frontend**: Vite + React 18 + Tailwind CSS + Radix UI + Motion di folder `app/` (Target Monorepo: `packages/ui` & `apps/web`).
 2. **Desktop Shell**: Tauri 2.0 (Rust) di folder `tauri/src-tauri/` yang menangani low-level audio I/O dan hotkeys.
 3. **Backend Server**: FastAPI (Python 3.12) di folder `backend/`, berjalan di `localhost:17493` sebagai sidecar process.
-4. **Audio DSP**: Spotify Pedalboard + librosa + soundfile di `backend/utils/`.
-5. **Quality Control**: Biome (`bun run check:fix`) untuk frontend/root dan Ruff (`ruff check backend/`) untuk backend.
+4. **Hybrid LLM**: Google Gemini Pro (Cloud via UI API Key) + Qwen2.5 (Offline di `downloads/models/`).
+5. **Audio DSP**: Spotify Pedalboard + librosa + soundfile di `backend/utils/`.
+6. **Quality Control**: Biome (`bun run check:fix`) untuk frontend/root dan Ruff (`ruff check backend/`) untuk backend.
