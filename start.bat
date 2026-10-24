@@ -5,6 +5,19 @@ title Voicebox - AI Voice Studio Launcher
 set "ROOT_DIR=%~dp0"
 cd /d "%ROOT_DIR%"
 
+REM Konfigurasi folder download & model AI terpusat
+set "DOWNLOADS_DIR=%ROOT_DIR%downloads"
+if not exist "%DOWNLOADS_DIR%" mkdir "%DOWNLOADS_DIR%"
+if not exist "%DOWNLOADS_DIR%\models" mkdir "%DOWNLOADS_DIR%\models"
+if not exist "%DOWNLOADS_DIR%\pip_cache" mkdir "%DOWNLOADS_DIR%\pip_cache"
+if not exist "%DOWNLOADS_DIR%\torch" mkdir "%DOWNLOADS_DIR%\torch"
+
+set "PIP_CACHE_DIR=%DOWNLOADS_DIR%\pip_cache"
+set "VOICEBOX_MODELS_DIR=%DOWNLOADS_DIR%\models"
+set "HF_HOME=%DOWNLOADS_DIR%\huggingface"
+set "HF_HUB_CACHE=%DOWNLOADS_DIR%\models"
+set "TORCH_HOME=%DOWNLOADS_DIR%\torch"
+
 set "BUN_CMD=bun"
 if exist "%USERPROFILE%\.bun\bin\bun.exe" (
     set "BUN_CMD=%USERPROFILE%\.bun\bin\bun.exe"
@@ -17,21 +30,23 @@ echo ======================================================================
 echo                 VOICEBOX - AI VOICE STUDIO LAUNCHER
 echo ======================================================================
 echo.
-echo   [1] Jalankan Voicebox Desktop  (Backend Server + Tauri App)
-echo   [2] Jalankan Backend Saja      (FastAPI Server di port 17493)
-echo   [3] Jalankan Web UI Saja       (Browser Mode via Vite)
-echo   [4] Setup Dependensi Lengkap   (Install Bun, Python 3.12, PyTorch)
+echo   [1] Jalankan Voicebox Desktop   (Backend Server + Tauri App)
+echo   [2] Jalankan Backend Saja       (FastAPI Server di port 17493)
+echo   [3] Jalankan Web UI Saja        (Browser Mode via Vite)
+echo   [4] Setup Dependensi Lengkap    (Install Bun, Python 3.12, PyTorch)
 echo   [5] Cek Status Service dan Port (Health Check :17493)
+echo   [6] Kelola / Hapus Downloads    (Pembersih Disk / Cache / Model)
 echo   [0] Keluar
 echo.
 echo ======================================================================
-set /p "CHOICE=Pilih menu [0-5]: "
+set /p "CHOICE=Pilih menu [0-6]: "
 
 if "%CHOICE%"=="1" goto START_DESKTOP
 if "%CHOICE%"=="2" goto START_SERVER
 if "%CHOICE%"=="3" goto START_WEB
 if "%CHOICE%"=="4" goto SETUP_ENV
 if "%CHOICE%"=="5" goto CHECK_STATUS
+if "%CHOICE%"=="6" goto MANAGE_DOWNLOADS
 if "%CHOICE%"=="0" goto EXIT_APP
 
 echo Pilihan tidak valid, silakan coba lagi.
@@ -87,7 +102,8 @@ if errorlevel 1 (
 set "PYTHON_EXE=%ROOT_DIR%backend\venv\Scripts\python.exe"
 
 echo [INFO] Menggunakan Python: %PYTHON_EXE%
-echo [INFO] Endpoint FastAPI: http://localhost:17493
+echo [INFO] Folder Model AI   : %VOICEBOX_MODELS_DIR%
+echo [INFO] Endpoint FastAPI  : http://localhost:17493
 echo [INFO] Tekan Ctrl+C untuk menghentikan server.
 echo.
 
@@ -159,7 +175,15 @@ if exist "%USERPROFILE%\.bun\bin\bun.exe" (
 )
 
 echo.
-echo [4] Memeriksa Placeholder Dev Sidecar...
+echo [4] Memeriksa Folder Downloads...
+if exist "%DOWNLOADS_DIR%" (
+    echo [OK] Folder downloads siap di: %DOWNLOADS_DIR%
+) else (
+    echo [WARNING] Folder downloads belum ada.
+)
+
+echo.
+echo [5] Memeriksa Placeholder Dev Sidecar...
 if exist "%ROOT_DIR%tauri\src-tauri\binaries\voicebox-server-*.exe" (
     echo [OK] Placeholder binaries ditemukan.
 ) else (
@@ -169,6 +193,10 @@ if exist "%ROOT_DIR%tauri\src-tauri\binaries\voicebox-server-*.exe" (
 
 echo.
 pause
+goto MENU
+
+:MANAGE_DOWNLOADS
+call "%ROOT_DIR%clean-downloads.bat"
 goto MENU
 
 :CHECK_VENV_EXISTS

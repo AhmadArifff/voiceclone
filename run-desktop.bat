@@ -4,6 +4,14 @@ title Voicebox - Desktop App
 set "ROOT_DIR=%~dp0"
 cd /d "%ROOT_DIR%"
 
+REM Konfigurasi folder model dan cache terpusat
+set "DOWNLOADS_DIR=%ROOT_DIR%downloads"
+if not exist "%DOWNLOADS_DIR%\models" mkdir "%DOWNLOADS_DIR%\models"
+set "VOICEBOX_MODELS_DIR=%DOWNLOADS_DIR%\models"
+set "HF_HOME=%DOWNLOADS_DIR%\huggingface"
+set "HF_HUB_CACHE=%DOWNLOADS_DIR%\models"
+set "TORCH_HOME=%DOWNLOADS_DIR%\torch"
+
 set "BUN_CMD=bun"
 if exist "%USERPROFILE%\.bun\bin\bun.exe" (
     set "BUN_CMD=%USERPROFILE%\.bun\bin\bun.exe"

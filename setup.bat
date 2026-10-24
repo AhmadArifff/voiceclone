@@ -5,9 +5,24 @@ title Voicebox - Setup and Dependency Installer
 set "ROOT_DIR=%~dp0"
 cd /d "%ROOT_DIR%"
 
+REM Konfigurasi folder download terpusat agar mudah dibersihkan
+set "DOWNLOADS_DIR=%ROOT_DIR%downloads"
+if not exist "%DOWNLOADS_DIR%" mkdir "%DOWNLOADS_DIR%"
+if not exist "%DOWNLOADS_DIR%\models" mkdir "%DOWNLOADS_DIR%\models"
+if not exist "%DOWNLOADS_DIR%\pip_cache" mkdir "%DOWNLOADS_DIR%\pip_cache"
+if not exist "%DOWNLOADS_DIR%\torch" mkdir "%DOWNLOADS_DIR%\torch"
+
+set "PIP_CACHE_DIR=%DOWNLOADS_DIR%\pip_cache"
+set "VOICEBOX_MODELS_DIR=%DOWNLOADS_DIR%\models"
+set "HF_HOME=%DOWNLOADS_DIR%\huggingface"
+set "HF_HUB_CACHE=%DOWNLOADS_DIR%\models"
+set "TORCH_HOME=%DOWNLOADS_DIR%\torch"
+
 echo ======================================================================
 echo           VOICEBOX - AUTOMATED SETUP AND DEPENDENCY INSTALLER
 echo ======================================================================
+echo [INFO] Folder unduhan terpusat di: %DOWNLOADS_DIR%
+echo       (Semua file cache dan model akan disimpan di sini)
 echo.
 
 REM ----------------------------------------------------------------------
@@ -109,7 +124,8 @@ REM ----------------------------------------------------------------------
 REM 3. Instal Dependensi Python (PyTorch CUDA / CPU + TTS Engines)
 REM ----------------------------------------------------------------------
 echo [3/5] Menginstal dependensi Python ke backend\venv...
-"%PYTHON_EXE%" -m pip install --upgrade pip -q
+echo [INFO] Cache wheel diarahkan ke: %PIP_CACHE_DIR%
+"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" --upgrade pip -q
 
 echo [INFO] Mendeteksi hardware GPU...
 powershell -NoProfile -Command "$g = Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty Name; Write-Host ('GPU terdeteksi: ' + ($g -join ', ')); if ($g -match 'NVIDIA') { exit 10 } elseif ($g -match 'Arc') { exit 20 } else { exit 30 }"
@@ -117,25 +133,25 @@ set "GPU_DETECT_CODE=%ERRORLEVEL%"
 
 if %GPU_DETECT_CODE% EQU 10 (
     echo [INFO] GPU NVIDIA terdeteksi - menginstal PyTorch dengan CUDA 12.8...
-    "%PYTHON_EXE%" -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+    "%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 ) else if %GPU_DETECT_CODE% EQU 20 (
     echo [INFO] GPU Intel Arc terdeteksi - menginstal PyTorch dengan dukungan XPU...
-    "%PYTHON_EXE%" -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/xpu
-    "%PYTHON_EXE%" -m pip install intel-extension-for-pytorch --index-url https://download.pytorch.org/whl/xpu
+    "%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" torch torchvision torchaudio --index-url https://download.pytorch.org/whl/xpu
+    "%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" intel-extension-for-pytorch --index-url https://download.pytorch.org/whl/xpu
 ) else (
     echo [INFO] GPU NVIDIA tidak terdeteksi - menggunakan PyTorch versi CPU...
-    "%PYTHON_EXE%" -m pip install torch torchvision torchaudio
+    "%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" torch torchvision torchaudio
 )
 
 echo [INFO] Menginstal dependensi backend (requirements.txt)...
-"%PYTHON_EXE%" -m pip install -r "%ROOT_DIR%backend\requirements.txt"
+"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" -r "%ROOT_DIR%backend\requirements.txt"
 
 echo [INFO] Menginstal engine TTS pihak ketiga...
-"%PYTHON_EXE%" -m pip install --no-deps chatterbox-tts
-"%PYTHON_EXE%" -m pip install --no-deps hume-tada
-"%PYTHON_EXE%" -m pip install --no-deps omnivoice
-"%PYTHON_EXE%" -m pip install git+https://github.com/QwenLM/Qwen3-TTS.git
-"%PYTHON_EXE%" -m pip install pyinstaller ruff pytest pytest-asyncio openai -q
+"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" --no-deps chatterbox-tts
+"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" --no-deps hume-tada
+"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" --no-deps omnivoice
+"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" git+https://github.com/QwenLM/Qwen3-TTS.git
+"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" pyinstaller ruff pytest pytest-asyncio openai -q
 
 echo.
 REM ----------------------------------------------------------------------
@@ -155,6 +171,9 @@ echo.
 echo ======================================================================
 echo          SETUP SELESAI! SEMUA DEPENDENSI SIAP DIGUNAKAN.
 echo ======================================================================
+echo [TIPS] Semua file unduhan/cache tersimpan rapi di: %DOWNLOADS_DIR%
+echo       Anda bisa membersihkan folder ini kapan saja via clean-downloads.bat
+echo.
 echo Anda sekarang bisa menjalankan:
 echo   - start.bat        (Menu utama launcher)
 echo   - run-desktop.bat  (Langsung menjalankan Voicebox Desktop)

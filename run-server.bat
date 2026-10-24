@@ -4,6 +4,14 @@ title Voicebox - Backend Server (Port 17493)
 set "ROOT_DIR=%~dp0"
 cd /d "%ROOT_DIR%"
 
+REM Konfigurasi folder model dan cache terpusat
+set "DOWNLOADS_DIR=%ROOT_DIR%downloads"
+if not exist "%DOWNLOADS_DIR%\models" mkdir "%DOWNLOADS_DIR%\models"
+set "VOICEBOX_MODELS_DIR=%DOWNLOADS_DIR%\models"
+set "HF_HOME=%DOWNLOADS_DIR%\huggingface"
+set "HF_HUB_CACHE=%DOWNLOADS_DIR%\models"
+set "TORCH_HOME=%DOWNLOADS_DIR%\torch"
+
 set "PYTHON_EXE=%ROOT_DIR%backend\venv\Scripts\python.exe"
 
 if not exist "%PYTHON_EXE%" (
@@ -17,7 +25,8 @@ if not exist "%PYTHON_EXE%" (
 echo ======================================================================
 echo          VOICEBOX FASTAPI SERVER (http://127.0.0.1:17493)
 echo ======================================================================
-echo [INFO] Python: %PYTHON_EXE%
+echo [INFO] Python            : %PYTHON_EXE%
+echo [INFO] Folder Model AI   : %VOICEBOX_MODELS_DIR%
 echo [INFO] Server siap menerima koneksi dari Tauri desktop, Web, dan MCP.
 echo [INFO] Tekan Ctrl+C untuk mematikan server.
 echo.
