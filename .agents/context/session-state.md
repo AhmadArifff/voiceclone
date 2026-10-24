@@ -68,3 +68,7 @@
 ### ADR-003: Restrukturisasi Monorepo Bertahap (Zero Breaking Changes)
 - **Konteks**: Struktur saat ini memiliki ketergantungan rapuh `../../app/src/...` pada `web/src/main.tsx`.
 - **Keputusan**: Migrasi akan dilakukan secara bertahap (Fase 3 pada PRD), dimulai dari ekstraksi `@voicebox/ui` dan `@voicebox/core`, memastikan desktop Tauri dan Web tetap fungsional di setiap langkah.
+
+### ADR-004: Rust Toolchain Guardrail untuk Desktop Mode
+- **Konteks**: Mode desktop (`tauri dev`) membutuhkan compiler Rust (`cargo`) terpasang secara lokal untuk mengompilasi binding native Tauri. Pada komputer tanpa Rust, perintah langsung keluar dengan error `cargo metadata: program not found`.
+- **Keputusan**: Menyematkan deteksi otomatis `where cargo` pada `start.bat` dan `run-desktop.bat`. Jika Rust belum terpasang, sistem menampilkan dialog panduan yang jelas dan menawarkan pengalihan otomatis 1-klik ke Mode Web (`run-web.bat`), yang memiliki fitur 100% identik tanpa ketergantungan compiler Rust/C++.

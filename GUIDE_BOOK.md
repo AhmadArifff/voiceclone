@@ -151,6 +151,15 @@ Jalankan file **`clean-downloads.bat`** (atau pilih menu `[6]` di `start.bat`). 
   Get-Process -Id (Get-NetTCPConnection -LocalPort 17493).OwningProcess | Stop-Process -Force
   ```
 
+### 4. Menu [1] Desktop Tidak Muncul Apa-apa / Langsung Tertutup
+* **Penyebab**: Aplikasi desktop Voicebox dibangun menggunakan **Tauri v2 (Rust)**. Pada mode pengembangan (*source code*), perintah `bun run tauri dev` membutuhkan **Rust Toolchain (`cargo` dan `rustc`)** terpasang di Windows untuk mengompilasi kode native Rust. Jika komputer belum terpasang Rust, perintah akan langsung berhenti dengan pesan `cargo metadata: program not found`.
+* **Solusi Instan (Sangat Direkomendasikan)**:
+  - Gunakan **Mode Web (Menu [3] / `run-web.bat`)**.
+  - **100% Fitur Sama Persis**: Kloning Suara, TTS Kokoro/Qwen, Diktasi STT, Efek Pedalboard, dan Input Gemini Pro.
+  - **TIDAK MEMBUTUHKAN RUST SAMA SEKALI**: Langsung terbuka di browser Anda (Chrome/Edge/Brave).
+* **Solusi Jika Tetap Ingin Desktop Native**:
+  - Pasang Rust melalui situs resmi: [https://rustup.rs](https://rustup.rs) atau jalankan `winget install Rustlang.Rustup` di PowerShell, lalu restart terminal Anda.
+
 ---
 
 ## 7. Panduan Adopsi & Legalitas Lisensi MIT

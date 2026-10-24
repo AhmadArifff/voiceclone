@@ -62,6 +62,8 @@ call :CHECK_VENV_EXISTS
 if errorlevel 1 goto MENU
 call :CHECK_BUN_EXISTS
 if errorlevel 1 goto MENU
+call :CHECK_RUST_EXISTS
+if errorlevel 1 goto MENU
 
 echo.
 echo [1/2] Memeriksa status Backend Server (port 17493)...
@@ -246,6 +248,34 @@ if /i "!INSTALL_BUN!"=="Y" (
         exit /b 0
     )
 )
+exit /b 1
+
+:CHECK_RUST_EXISTS
+where cargo >nul 2>&1
+if %ERRORLEVEL% EQU 0 exit /b 0
+
+echo.
+echo ======================================================================
+echo   [PERINGATAN] RUST COMPILER (CARGO) BELUM TERPASANG DI WINDOWS!
+echo ======================================================================
+echo   Mode Desktop (Tauri) berjalan dari kode sumber dan membutuhkan
+echo   compiler Rust untuk membangun jendela native.
+echo.
+echo   SOLUSI YANG SANGAT MUDAH:
+echo   Gunakan MODE WEB (Menu [3] / run-web.bat)
+echo   - 100%% FITUR SAMA: Kloning Suara, TTS Kokoro/Qwen, Diktasi, DSP Efek
+echo   - Berjalan langsung di Web Browser (Chrome/Edge/Brave)
+echo   - TIDAK MEMBUTUHKAN RUST ATAU C++ COMPILER SAMA SEKALI!
+echo.
+echo   Jika tetap ingin desktop native, pasang Rust via: https://rustup.rs
+echo ======================================================================
+echo.
+set "SWITCH_WEB=Y"
+set /p "SWITCH_WEB=Apakah Anda ingin langsung beralih ke Mode Web sekarang? (Y/N) [Y]: "
+if /i "!SWITCH_WEB!"=="Y" (
+    goto START_WEB
+)
+pause
 exit /b 1
 
 :EXIT_APP
