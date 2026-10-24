@@ -22,7 +22,7 @@ echo ======================================================================
 echo           VOICEBOX - AUTOMATED SETUP AND DEPENDENCY INSTALLER
 echo ======================================================================
 echo [INFO] Folder unduhan terpusat di: %DOWNLOADS_DIR%
-echo       (Semua file cache dan model akan disimpan di sini)
+echo        (Semua file cache dan model akan disimpan di sini)
 echo.
 
 REM ----------------------------------------------------------------------
@@ -34,26 +34,28 @@ set "BUN_EXE="
 if exist "%USERPROFILE%\.bun\bin\bun.exe" (
     set "BUN_EXE=%USERPROFILE%\.bun\bin\bun.exe"
     set "PATH=%USERPROFILE%\.bun\bin;%PATH%"
-) else (
-    where bun >nul 2>&1
-    if !ERRORLEVEL! EQU 0 (
-        set "BUN_EXE=bun"
-    )
+    goto BUN_READY
 )
 
-if not defined BUN_EXE (
-    echo [INFO] Bun belum terinstal. Mengunduh dan menginstal Bun via PowerShell...
-    powershell -NoProfile -Command "irm bun.sh/install.ps1 | iex"
-    if exist "%USERPROFILE%\.bun\bin\bun.exe" (
-        set "BUN_EXE=%USERPROFILE%\.bun\bin\bun.exe"
-        set "PATH=%USERPROFILE%\.bun\bin;%PATH%"
-    ) else (
-        echo [ERROR] Gagal menginstal Bun otomatis. Silakan instal manual dari https://bun.sh
-        pause
-        exit /b 1
-    )
+where bun >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    set "BUN_EXE=bun"
+    goto BUN_READY
 )
 
+echo [INFO] Bun belum terinstal. Mengunduh dan menginstal Bun via PowerShell...
+powershell -NoProfile -Command "irm bun.sh/install.ps1 | iex"
+if exist "%USERPROFILE%\.bun\bin\bun.exe" (
+    set "BUN_EXE=%USERPROFILE%\.bun\bin\bun.exe"
+    set "PATH=%USERPROFILE%\.bun\bin;%PATH%"
+    goto BUN_READY
+)
+
+echo [ERROR] Gagal menginstal Bun otomatis. Silakan instal manual dari https://bun.sh
+pause
+exit /b 1
+
+:BUN_READY
 for /f "tokens=*" %%v in ('"%BUN_EXE%" --version') do echo [OK] Bun terdeteksi: v%%v
 
 echo.
@@ -64,60 +66,52 @@ echo [2/5] Menyiapkan Python 3.12 Virtual Environment (backend\venv)...
 set "VENV_DIR=%ROOT_DIR%backend\venv"
 set "PYTHON_EXE=%VENV_DIR%\Scripts\python.exe"
 
-if exist "%PYTHON_EXE%" (
-    for /f "tokens=*" %%v in ('"%PYTHON_EXE%" --version') do echo [OK] Virtual Environment siap: %%v
-) else (
-    echo [INFO] Mencari / menyiapkan interpreter Python 3.12...
-    set "FOUND_PY="
+if exist "%PYTHON_EXE%" goto VENV_READY
 
-    REM Cek dan gunakan uv jika tersedia
-    where uv >nul 2>&1
-    if !ERRORLEVEL! EQU 0 (
-        echo [INFO] Memeriksa Python 3.12 via uv...
-        uv python install 3.12 >nul 2>&1
-        uv venv "%VENV_DIR%" --python 3.12
-        if exist "%PYTHON_EXE%" set "FOUND_PY=uv"
-    )
+echo [INFO] Mencari / menyiapkan interpreter Python 3.12...
 
-    REM Cek via py launcher jika uv belum membuat venv
-    if not defined FOUND_PY (
-        where py >nul 2>&1
-        if !ERRORLEVEL! EQU 0 (
-            py -3.12 -c "import sys" >nul 2>&1
-            if !ERRORLEVEL! EQU 0 (
-                echo [INFO] Membuat venv menggunakan 'py -3.12'...
-                py -3.12 -m venv "%VENV_DIR%"
-                if exist "%PYTHON_EXE%" set "FOUND_PY=py"
-            )
-        )
-    )
-
-    REM Cek apakah python di PATH adalah 3.12
-    if not defined FOUND_PY (
-        where python >nul 2>&1
-        if !ERRORLEVEL! EQU 0 (
-            python -c "import sys; sys.exit(0 if sys.version_info[:2] == (3, 12) else 1)" >nul 2>&1
-            if !ERRORLEVEL! EQU 0 (
-                echo [INFO] Membuat venv menggunakan python di PATH...
-                python -m venv "%VENV_DIR%"
-                if exist "%PYTHON_EXE%" set "FOUND_PY=python"
-            )
-        )
-    )
-
-    if not exist "%PYTHON_EXE%" (
-        echo.
-        echo [ERROR] Python 3.12 tidak ditemukan!
-        echo Voicebox mewajibkan Python 3.12 (3.13/3.14 belum didukung dependensi audio PyTorch).
-        echo Pilihan solusi:
-        echo   1. Jalankan: uv python install 3.12
-        echo   2. Atau jalankan: winget install -e --id Python.Python.3.12
-        echo.
-        pause
-        exit /b 1
-    )
-    for /f "tokens=*" %%v in ('"%PYTHON_EXE%" --version') do echo [OK] Virtual Environment berhasil dibuat: %%v
+REM Cek dan gunakan uv jika tersedia
+where uv >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo [INFO] Memeriksa Python 3.12 via uv...
+    uv python install 3.12 >nul 2>&1
+    uv venv "%VENV_DIR%" --python 3.12 --seed
+    if exist "%PYTHON_EXE%" goto VENV_READY
 )
+
+REM Cek via py launcher jika uv belum membuat venv
+where py >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    py -3.12 -c "import sys" >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        echo [INFO] Membuat venv menggunakan py -3.12...
+        py -3.12 -m venv "%VENV_DIR%"
+        if exist "%PYTHON_EXE%" goto VENV_READY
+    )
+)
+
+REM Cek apakah python di PATH adalah 3.12
+where python >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    python -c "import sys; sys.exit(0 if sys.version_info[:2] == (3, 12) else 1)" >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        echo [INFO] Membuat venv menggunakan python di PATH...
+        python -m venv "%VENV_DIR%"
+        if exist "%PYTHON_EXE%" goto VENV_READY
+    )
+)
+
+echo.
+echo [ERROR] Python 3.12 tidak ditemukan!
+echo Voicebox membutuhkan Python 3.12 khusus.
+echo Silakan jalankan perintah: uv python install 3.12
+echo Atau: winget install -e --id Python.Python.3.12
+echo.
+pause
+exit /b 1
+
+:VENV_READY
+for /f "tokens=*" %%v in ('"%PYTHON_EXE%" --version') do echo [OK] Virtual Environment siap: %%v
 
 echo.
 REM ----------------------------------------------------------------------
@@ -125,33 +119,55 @@ REM 3. Instal Dependensi Python (PyTorch CUDA / CPU + TTS Engines)
 REM ----------------------------------------------------------------------
 echo [3/5] Menginstal dependensi Python ke backend\venv...
 echo [INFO] Cache wheel diarahkan ke: %PIP_CACHE_DIR%
-"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" --upgrade pip -q
 
+where uv >nul 2>&1
+if %ERRORLEVEL% EQU 0 goto USE_UV_PIP
+
+set "PIP_CMD="%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%""
+"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" --upgrade pip -q
+goto PIP_CMD_READY
+
+:USE_UV_PIP
+set "PIP_CMD=uv pip install --python "%PYTHON_EXE%" --cache-dir "%PIP_CACHE_DIR%""
+echo [INFO] Menggunakan uv pip mode instalasi cepat...
+
+:PIP_CMD_READY
 echo [INFO] Mendeteksi hardware GPU...
 powershell -NoProfile -Command "$g = Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty Name; Write-Host ('GPU terdeteksi: ' + ($g -join ', ')); if ($g -match 'NVIDIA') { exit 10 } elseif ($g -match 'Arc') { exit 20 } else { exit 30 }"
 set "GPU_DETECT_CODE=%ERRORLEVEL%"
 
-if %GPU_DETECT_CODE% EQU 10 (
-    echo [INFO] GPU NVIDIA terdeteksi - menginstal PyTorch dengan CUDA 12.8...
-    "%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
-) else if %GPU_DETECT_CODE% EQU 20 (
-    echo [INFO] GPU Intel Arc terdeteksi - menginstal PyTorch dengan dukungan XPU...
-    "%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" torch torchvision torchaudio --index-url https://download.pytorch.org/whl/xpu
-    "%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" intel-extension-for-pytorch --index-url https://download.pytorch.org/whl/xpu
-) else (
-    echo [INFO] GPU NVIDIA tidak terdeteksi - menggunakan PyTorch versi CPU...
-    "%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" torch torchvision torchaudio
-)
+if %GPU_DETECT_CODE% EQU 10 goto GPU_NVIDIA
+if %GPU_DETECT_CODE% EQU 20 goto GPU_INTEL
+goto GPU_CPU
 
-echo [INFO] Menginstal dependensi backend (requirements.txt)...
-"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" -r "%ROOT_DIR%backend\requirements.txt"
+:GPU_NVIDIA
+echo [INFO] GPU NVIDIA terdeteksi - menginstal PyTorch dengan CUDA 12.8...
+%PIP_CMD% torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+goto GPU_DONE
 
+:GPU_INTEL
+echo [INFO] GPU Intel Arc terdeteksi - menginstal PyTorch dengan dukungan XPU...
+%PIP_CMD% torch torchvision torchaudio --index-url https://download.pytorch.org/whl/xpu
+%PIP_CMD% intel-extension-for-pytorch --index-url https://download.pytorch.org/whl/xpu
+goto GPU_DONE
+
+:GPU_CPU
+echo [INFO] GPU NVIDIA tidak terdeteksi - menggunakan PyTorch versi CPU...
+%PIP_CMD% torch torchvision torchaudio
+goto GPU_DONE
+
+:GPU_DONE
+echo.
+echo [INFO] Menginstal dependensi backend dari requirements.txt...
+%PIP_CMD% -r "%ROOT_DIR%backend\requirements.txt"
+
+echo.
 echo [INFO] Menginstal engine TTS pihak ketiga...
-"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" --no-deps chatterbox-tts
-"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" --no-deps hume-tada
-"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" --no-deps omnivoice
-"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" git+https://github.com/QwenLM/Qwen3-TTS.git
-"%PYTHON_EXE%" -m pip install --cache-dir "%PIP_CACHE_DIR%" pyinstaller ruff pytest pytest-asyncio openai -q
+%PIP_CMD% --no-deps chatterbox-tts
+%PIP_CMD% --no-deps hume-tada
+%PIP_CMD% --no-deps omnivoice
+%PIP_CMD% git+https://github.com/QwenLM/Qwen3-TTS.git
+%PIP_CMD% pyinstaller ruff pytest pytest-asyncio openai
 
 echo.
 REM ----------------------------------------------------------------------
@@ -172,7 +188,7 @@ echo ======================================================================
 echo          SETUP SELESAI! SEMUA DEPENDENSI SIAP DIGUNAKAN.
 echo ======================================================================
 echo [TIPS] Semua file unduhan/cache tersimpan rapi di: %DOWNLOADS_DIR%
-echo       Anda bisa membersihkan folder ini kapan saja via clean-downloads.bat
+echo        Anda bisa membersihkan folder ini kapan saja via clean-downloads.bat
 echo.
 echo Anda sekarang bisa menjalankan:
 echo   - start.bat        (Menu utama launcher)
