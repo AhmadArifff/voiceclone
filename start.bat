@@ -5,7 +5,9 @@ title Voicebox - AI Voice Studio Launcher
 set "ROOT_DIR=%~dp0"
 cd /d "%ROOT_DIR%"
 
+set "BUN_CMD=bun"
 if exist "%USERPROFILE%\.bun\bin\bun.exe" (
+    set "BUN_CMD=%USERPROFILE%\.bun\bin\bun.exe"
     set "PATH=%USERPROFILE%\.bun\bin;%PATH%"
 )
 
@@ -63,7 +65,7 @@ node scripts/setup-dev-sidecar.js
 echo.
 echo [INFO] Menjalankan Tauri Desktop App...
 cd /d "%ROOT_DIR%tauri"
-bun run tauri dev
+"%BUN_CMD%" run tauri dev
 
 echo.
 echo Desktop app telah ditutup.
@@ -117,14 +119,13 @@ if %ERRORLEVEL% NEQ 0 (
 echo.
 echo [INFO] Menjalankan Vite Web Server...
 cd /d "%ROOT_DIR%web"
-bun run dev
+"%BUN_CMD%" run dev
 pause
 goto MENU
 
 :SETUP_ENV
 cls
 call "%ROOT_DIR%setup.bat"
-pause
 goto MENU
 
 :CHECK_STATUS
@@ -146,11 +147,15 @@ if exist "%ROOT_DIR%backend\venv\Scripts\python.exe" (
 
 echo.
 echo [3] Memeriksa Bun Runtime...
-where bun >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    bun --version
+if exist "%USERPROFILE%\.bun\bin\bun.exe" (
+    for /f "tokens=*" %%v in ('"%USERPROFILE%\.bun\bin\bun.exe" --version') do echo [OK] Bun ditemukan: v%%v di %USERPROFILE%\.bun\bin\bun.exe
 ) else (
-    echo [WARNING] Bun tidak ditemukan di PATH.
+    where bun >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        for /f "tokens=*" %%v in ('bun --version') do echo [OK] Bun ditemukan: v%%v
+    ) else (
+        echo [WARNING] Bun tidak ditemukan di PATH.
+    )
 )
 
 echo.
@@ -181,24 +186,30 @@ if not exist "%ROOT_DIR%backend\venv\Scripts\python.exe" (
 exit /b 0
 
 :CHECK_BUN_EXISTS
-where bun >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    if exist "%USERPROFILE%\.bun\bin\bun.exe" (
-        set "PATH=%USERPROFILE%\.bun\bin;%PATH%"
-        exit /b 0
-    )
-    echo.
-    echo [PERINGATAN] Bun runtime belum terinstall!
-    echo Voicebox membutuhkan Bun untuk antarmuka pengguna.
-    set /p "INSTALL_BUN=Apakah Anda ingin menginstal Bun otomatis? (Y/N): "
-    if /i "!INSTALL_BUN!"=="Y" (
-        powershell -NoProfile -Command "irm bun.sh/install.ps1 | iex"
-        set "PATH=%USERPROFILE%\.bun\bin;%PATH%"
-        exit /b 0
-    )
-    exit /b 1
+if exist "%USERPROFILE%\.bun\bin\bun.exe" (
+    set "BUN_CMD=%USERPROFILE%\.bun\bin\bun.exe"
+    set "PATH=%USERPROFILE%\.bun\bin;%PATH%"
+    exit /b 0
 )
-exit /b 0
+where bun >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    set "BUN_CMD=bun"
+    exit /b 0
+)
+
+echo.
+echo [PERINGATAN] Bun runtime belum terinstall!
+echo Voicebox membutuhkan Bun untuk antarmuka pengguna.
+set /p "INSTALL_BUN=Apakah Anda ingin menginstal Bun otomatis? (Y/N): "
+if /i "!INSTALL_BUN!"=="Y" (
+    powershell -NoProfile -Command "irm bun.sh/install.ps1 | iex"
+    if exist "%USERPROFILE%\.bun\bin\bun.exe" (
+        set "BUN_CMD=%USERPROFILE%\.bun\bin\bun.exe"
+        set "PATH=%USERPROFILE%\.bun\bin;%PATH%"
+        exit /b 0
+    )
+)
+exit /b 1
 
 :EXIT_APP
 echo Sampai jumpa!

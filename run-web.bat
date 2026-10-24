@@ -4,13 +4,15 @@ title Voicebox - Web UI
 set "ROOT_DIR=%~dp0"
 cd /d "%ROOT_DIR%"
 
+set "BUN_CMD=bun"
 if exist "%USERPROFILE%\.bun\bin\bun.exe" (
+    set "BUN_CMD=%USERPROFILE%\.bun\bin\bun.exe"
     set "PATH=%USERPROFILE%\.bun\bin;%PATH%"
 )
 
-where bun >nul 2>&1
+"%BUN_CMD%" --version >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Bun tidak ditemukan di PATH!
+    echo [ERROR] Bun tidak ditemukan di PATH atau %USERPROFILE%\.bun\bin!
     echo Jalankan setup.bat terlebih dahulu untuk menginstal Bun.
     pause
     exit /b 1
@@ -25,4 +27,4 @@ if %ERRORLEVEL% NEQ 0 (
 
 echo [INFO] Menjalankan Voicebox Web UI...
 cd /d "%ROOT_DIR%web"
-bun run dev
+"%BUN_CMD%" run dev

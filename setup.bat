@@ -14,25 +14,32 @@ REM ----------------------------------------------------------------------
 REM 1. Periksa / Install Bun
 REM ----------------------------------------------------------------------
 echo [1/5] Memeriksa Bun JavaScript Runtime...
+
+set "BUN_EXE="
 if exist "%USERPROFILE%\.bun\bin\bun.exe" (
+    set "BUN_EXE=%USERPROFILE%\.bun\bin\bun.exe"
     set "PATH=%USERPROFILE%\.bun\bin;%PATH%"
+) else (
+    where bun >nul 2>&1
+    if !ERRORLEVEL! EQU 0 (
+        set "BUN_EXE=bun"
+    )
 )
 
-where bun >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
+if not defined BUN_EXE (
     echo [INFO] Bun belum terinstal. Mengunduh dan menginstal Bun via PowerShell...
     powershell -NoProfile -Command "irm bun.sh/install.ps1 | iex"
-    set "PATH=%USERPROFILE%\.bun\bin;%PATH%"
-    where bun >nul 2>&1
-    if !ERRORLEVEL% NEQ 0 (
+    if exist "%USERPROFILE%\.bun\bin\bun.exe" (
+        set "BUN_EXE=%USERPROFILE%\.bun\bin\bun.exe"
+        set "PATH=%USERPROFILE%\.bun\bin;%PATH%"
+    ) else (
         echo [ERROR] Gagal menginstal Bun otomatis. Silakan instal manual dari https://bun.sh
         pause
         exit /b 1
     )
-    echo [OK] Bun berhasil diinstal!
-) else (
-    for /f "tokens=*" %%v in ('bun --version') do echo [OK] Bun terdeteksi: v%%v
 )
+
+for /f "tokens=*" %%v in ('"%BUN_EXE%" --version') do echo [OK] Bun terdeteksi: v%%v
 
 echo.
 REM ----------------------------------------------------------------------
@@ -43,15 +50,16 @@ set "VENV_DIR=%ROOT_DIR%backend\venv"
 set "PYTHON_EXE=%VENV_DIR%\Scripts\python.exe"
 
 if exist "%PYTHON_EXE%" (
-    echo [OK] Virtual Environment sudah ada di backend\venv.
+    for /f "tokens=*" %%v in ('"%PYTHON_EXE%" --version') do echo [OK] Virtual Environment siap: %%v
 ) else (
-    echo [INFO] Mencari interpreter Python 3.12...
+    echo [INFO] Mencari / menyiapkan interpreter Python 3.12...
     set "FOUND_PY="
 
-    REM Cek via uv
+    REM Cek dan gunakan uv jika tersedia
     where uv >nul 2>&1
     if !ERRORLEVEL! EQU 0 (
-        echo [INFO] Menggunakan 'uv' untuk membuat venv Python 3.12...
+        echo [INFO] Memeriksa Python 3.12 via uv...
+        uv python install 3.12 >nul 2>&1
         uv venv "%VENV_DIR%" --python 3.12
         if exist "%PYTHON_EXE%" set "FOUND_PY=uv"
     )
@@ -87,13 +95,13 @@ if exist "%PYTHON_EXE%" (
         echo [ERROR] Python 3.12 tidak ditemukan!
         echo Voicebox mewajibkan Python 3.12 (3.13/3.14 belum didukung dependensi audio PyTorch).
         echo Pilihan solusi:
-        echo   1. Jalankan: winget install -e --id Python.Python.3.12
-        echo   2. Atau instal via uv: uv python install 3.12
+        echo   1. Jalankan: uv python install 3.12
+        echo   2. Atau jalankan: winget install -e --id Python.Python.3.12
         echo.
         pause
         exit /b 1
     )
-    echo [OK] Virtual environment Python 3.12 berhasil dibuat!
+    for /f "tokens=*" %%v in ('"%PYTHON_EXE%" --version') do echo [OK] Virtual Environment berhasil dibuat: %%v
 )
 
 echo.
@@ -134,7 +142,7 @@ REM ----------------------------------------------------------------------
 REM 4. Instal Dependensi JavaScript (Bun)
 REM ----------------------------------------------------------------------
 echo [4/5] Menginstal paket JavaScript workspace via Bun...
-bun install
+"%BUN_EXE%" install
 
 echo.
 REM ----------------------------------------------------------------------
@@ -152,3 +160,4 @@ echo   - start.bat        (Menu utama launcher)
 echo   - run-desktop.bat  (Langsung menjalankan Voicebox Desktop)
 echo   - run-server.bat   (Langsung menjalankan Backend Server)
 echo.
+pause

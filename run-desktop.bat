@@ -4,13 +4,15 @@ title Voicebox - Desktop App
 set "ROOT_DIR=%~dp0"
 cd /d "%ROOT_DIR%"
 
+set "BUN_CMD=bun"
 if exist "%USERPROFILE%\.bun\bin\bun.exe" (
+    set "BUN_CMD=%USERPROFILE%\.bun\bin\bun.exe"
     set "PATH=%USERPROFILE%\.bun\bin;%PATH%"
 )
 
-where bun >nul 2>&1
+"%BUN_CMD%" --version >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Bun tidak ditemukan di PATH!
+    echo [ERROR] Bun tidak ditemukan di PATH atau %USERPROFILE%\.bun\bin!
     echo Jalankan setup.bat terlebih dahulu untuk menginstal Bun.
     pause
     exit /b 1
@@ -32,4 +34,4 @@ node "%ROOT_DIR%scripts\setup-dev-sidecar.js" >nul 2>&1
 REM 3. Jalankan Tauri Desktop
 echo [INFO] Menjalankan Tauri desktop application...
 cd /d "%ROOT_DIR%tauri"
-bun run tauri dev
+"%BUN_CMD%" run tauri dev
