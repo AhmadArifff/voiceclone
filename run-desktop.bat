@@ -19,23 +19,23 @@ if exist "%USERPROFILE%\.bun\bin\bun.exe" (
 )
 
 "%BUN_CMD%" --version >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Bun tidak ditemukan di PATH atau %USERPROFILE%\.bun\bin!
-    echo Jalankan setup.bat terlebih dahulu untuk menginstal Bun.
-    pause
-    exit /b 1
-)
+if %ERRORLEVEL% EQU 0 goto BUN_OK
 
+echo [ERROR] Bun tidak ditemukan di PATH!
+echo Jalankan setup.bat terlebih dahulu untuk menginstal Bun.
+pause
+exit /b 1
+
+:BUN_OK
 REM 1. Cek atau jalankan backend server
 powershell -NoProfile -Command "try { $null = Invoke-WebRequest -Uri 'http://127.0.0.1:17493/health' -TimeoutSec 2 -UseBasicParsing; exit 0 } catch { exit 1 }"
-if %ERRORLEVEL% NEQ 0 (
-    echo [INFO] Menjalankan Backend Server di background...
-    start "Voicebox Backend Server (:17493)" cmd /k "cd /d "%ROOT_DIR%" && call run-server.bat"
-    timeout /t 3 /nobreak >nul
-) else (
-    echo [OK] Backend server sudah aktif di port 17493.
-)
+if %ERRORLEVEL% EQU 0 goto BACKEND_OK
 
+echo [INFO] Menjalankan Backend Server di background...
+start "Voicebox Backend Server (:17493)" cmd /k "cd /d "%ROOT_DIR%" && call run-server.bat"
+timeout /t 3 /nobreak >nul
+
+:BACKEND_OK
 REM 2. Pastikan placeholder binaries dev sudah siap
 node "%ROOT_DIR%scripts\setup-dev-sidecar.js" >nul 2>&1
 

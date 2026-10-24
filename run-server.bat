@@ -14,20 +14,22 @@ set "TORCH_HOME=%DOWNLOADS_DIR%\torch"
 
 set "PYTHON_EXE=%ROOT_DIR%backend\venv\Scripts\python.exe"
 
-if not exist "%PYTHON_EXE%" (
-    echo [ERROR] Virtual Environment (%PYTHON_EXE%) tidak ditemukan!
-    echo Silakan jalankan setup.bat terlebih dahulu untuk menyiapkan Python 3.12 dan dependensinya.
-    echo.
-    pause
-    exit /b 1
-)
+if exist "%PYTHON_EXE%" goto VENV_OK
 
+echo [ERROR] Virtual Environment Python tidak ditemukan!
+echo Path yang dicari: %PYTHON_EXE%
+echo Silakan jalankan setup.bat terlebih dahulu untuk menyiapkan Python 3.12 dan dependensinya.
+echo.
+pause
+exit /b 1
+
+:VENV_OK
 echo ======================================================================
 echo          VOICEBOX FASTAPI SERVER (http://127.0.0.1:17493)
 echo ======================================================================
-echo [INFO] Python            : %PYTHON_EXE%
-echo [INFO] Folder Model AI   : %VOICEBOX_MODELS_DIR%
-echo [INFO] Server siap menerima koneksi dari Tauri desktop, Web, dan MCP.
+echo [INFO] Python          : %PYTHON_EXE%
+echo [INFO] Folder Model AI : %VOICEBOX_MODELS_DIR%
+echo [INFO] Server siap menerima koneksi dari Web, Desktop, dan MCP.
 echo [INFO] Tekan Ctrl+C untuk mematikan server.
 echo.
 

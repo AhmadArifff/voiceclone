@@ -133,6 +133,9 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
+echo [INFO] Membuka web browser di http://localhost:5173 ...
+start http://localhost:5173
+
 echo [INFO] Menjalankan Vite Web Server...
 cd /d "%ROOT_DIR%web"
 "%BUN_CMD%" run dev
