@@ -111,7 +111,7 @@ echo [INFO] Endpoint FastAPI  : http://localhost:17493
 echo [INFO] Tekan Ctrl+C untuk menghentikan server.
 echo.
 
-"%PYTHON_EXE%" -m uvicorn backend.main:app --reload --port 17493
+"%PYTHON_EXE%" -m uvicorn backend.main:app --reload --reload-dir backend --reload-exclude "*venv*" --reload-exclude "*data*" --reload-exclude "*downloads*" --port 17493
 pause
 goto MENU
 

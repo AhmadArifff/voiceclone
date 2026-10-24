@@ -33,7 +33,7 @@ echo [INFO] Server siap menerima koneksi dari Web, Desktop, dan MCP.
 echo [INFO] Tekan Ctrl+C untuk mematikan server.
 echo.
 
-"%PYTHON_EXE%" -m uvicorn backend.main:app --reload --port 17493
+"%PYTHON_EXE%" -m uvicorn backend.main:app --reload --reload-dir backend --reload-exclude "*venv*" --reload-exclude "*data*" --reload-exclude "*downloads*" --port 17493
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo [ERROR] Server berhenti dengan kode error: %ERRORLEVEL%
